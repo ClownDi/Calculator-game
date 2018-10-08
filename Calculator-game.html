@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>无标题文档</title>
+</head>
+
+<body>
+  <style>
+
+   #num_box{ background:#F7F7F7; border-radius: 10px; padding: 20px; width: 300px; margin: 0 auto; text-align: center;border:1px solid #E4E4E4  }
+   #num_box input{border: 1px solid #DADADA;color: #888;height: 30px;margin-bottom: 16px;margin-right: 6px;margin-top: 2px;outline: 0 none;padding: 3px 3px 3px 5px;width: 60%;font-size: 12px;
+     line-height:15px;box-shadow: inset 0px 1px 4px #ECECEC;}
+   #num_box span{width: 30%;text-align: right;padding-right: 10px;margin-top: 10px;color: #888; display: inline-block;}
+   #type_list{background:#F7F7F7; border-radius: 10px; padding: 20px; width: 300px; margin: 0 auto; text-align: center;border:1px solid #E4E4E4; margin-top: 20px;}
+   #type_list input{border: 1px solid #DADADA;color: #888;height: 30px;margin-bottom: 16px;margin-right: 6px;margin-top: 2px;outline: 0 none;padding: 3px 3px 3px 5px;width: 60%;
+     font-size: 12px;line-height:15px;box-shadow: inset 0px 1px 4px #ECECEC;}
+   #type_list select{border: 1px solid #DADADA;color: #888;height: 30px;margin-bottom: 16px;margin-right: 6px;margin-top: 2px;outline: 0 none;padding: 3px 3px 3px 5px;width: 30%;
+       font-size: 12px;line-height:15px;box-shadow: inset 0px 1px 4px #ECECEC;}
+   #js_btn button{background: #E27575;border: none;padding: 10px 25px 10px 25px;color: #FFF;box-shadow: 1px 1px 5px #B6B6B6;border-radius: 3px;text-shadow: 1px 1px 1px #9E3F3F;cursor: pointer;}
+   #js_btn{padding: 20px; width: 300px; margin: 0 auto; text-align: center; }
+   #tj_btn{ display: block; width: 300px;background: #E27575;border: none;padding: 10px 25px 10px 25px;color: #FFF;box-shadow: 1px 1px 5px #B6B6B6;border-radius: 3px;text-shadow: 1px 1px 1px #9E3F3F;cursor: pointer;}
+   .tj_box{ width: 300px; margin: 0 auto;}
+   #result{background:#F7F7F7; border-radius: 10px; padding: 20px; width: 300px; margin: 0 auto; text-align: center;border:1px solid #E4E4E4; color: #000; min-height: 20px; margin-top: 20px;}
+  </style>
+  <div id="num_box">
+    <P><span>初始值：</span><input id="start" type="text" /></P>
+    <P><span>目标值：</span><input id="target" type="text" /></P>
+    <P><span>次  数：</span><input id="fre" type="text" /></P>
+  </div>
+  <div id="type_list">
+    <div class="type_box">
+    <select class="type">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">*</option>
+        <option value="/">/</option>
+        <option value="t"><<</option>
+        <option value="r">>></option>
+        <option value="z">增加</option>
+    </select>
+    <input type="text" class="text" value="0" />
+  </div>
+  </div>
+
+<div id="js_btn">
+  <button id="tianj">添加</button>
+  <button id="qingk">清空</button>
+</div>
+
+<div class="tj_box">
+  <button type="button" id="tj_btn" name="button">计算结果</button>
+</div>
+<div id="result">
+null
+</div>
+<script>
+window.onload = function(){
+  //点击按钮增加运算符
+  var type_dom = document.querySelector('#type_list .type_box').cloneNode(true);//选择type_list下的第一个type_box,并克隆所有的值；cloneNode(ture):克隆所有后代
+  type_dom.getElementsByClassName('text')[0].value = 0;
+
+  document.getElementById('tianj').addEventListener('click', function() {//为按钮增加点击事件
+      document.getElementById('type_list').appendChild(type_dom.cloneNode(true));//末尾增加一个type_box
+  });
+  //点击清楚运算符
+  document.getElementById('qingk').addEventListener('click', function() {
+      document.getElementById('type_list').innerHTML='';//type_list清空
+      document.getElementById('type_list').appendChild(type_dom.cloneNode(true));//清空后增加一个type_box
+  });
+//计算结果
+document.getElementById('tj_btn').addEventListener('click', function() {
+    //获取初始值，目标值，次数
+    var start = document.getElementById('start').value || 0;
+    var target = document.getElementById('target').value || 0;
+    var fre = document.getElementById('fre').value || 0;
+    var ctrl = [];
+
+    var type_list = document.querySelectorAll('#type_list .type_box');//选择所有的type_list
+    [].forEach.call(type_list, function(element) {//遍历获取的type_list
+        var symbol = element.getElementsByClassName('type')[0].value;//获取运算符号
+        var value = element.getElementsByClassName('text')[0].value;//获取运算符号后的数字
+        ctrl.push(symbol.toString() + value.toString());//运算符+数字转成字符串，过程输出
+    });
+    console.log('ctrl', ctrl);//输出所有的运算符和数字
+    var result = findnumber(start, target, fre, ctrl) || 'null';//引用计算方法
+    console.log('result', result);
+    document.getElementById('result').innerHTML = result;
+});
+
+//计算方法
+function findnumber(start, target, fre, oper) {//起始值，目标值，次数，oper
+
+    var code = '';
+    oper.forEach(function(element) {
+        code += " || calc('" + element + "', arguments)";
+    });
+    console.log(oper);
+    //删除首个||
+    code = code.replace(/\|\|/, '');
+
+    function find(num, pro, cs) {
+
+        if (num == target) {
+            return pro + ' = ' + target;
+        } else if (cs > fre) {
+            return null;
+        } else {
+            return eval(code);
+        }
+    }
+    function calc(formula, para) {
+        formula = formula.replace(/[\s]/g, '');
+        var symbol = {
+            '+': function(a, b) {
+                return parseInt(a) + parseInt(b);
+            },
+            '-': function(a, b) {
+                return a - b;
+            },
+            '*': function(a, b) {
+                return a * b;
+            },
+            '/': function(a, b) {
+                return a / b;
+            },
+            't': function(a) {
+                return parseInt(a/10);
+            },
+            'r': function(a,b) { 
+                b = b.toString();
+                a = a.toString();
+                var barr = b.split(",");// 在每个逗号(,)处进行分解
+                var b1 = barr[0];
+                var b2 = barr[1];
+                return parseInt(a.replace(b1,b2));
+            },
+            'z': function(a,b) { 
+                return parseInt(a*10+b);
+            },
+            'f':function(a){
+               a = a.toString(); 
+               for(var i=0; i<a.length;i++){
+                a+=a.charAt(a.length-i-1);
+               }
+               return parseInt(a);
+            }
+
+        };
+
+        var char = formula[0];
+        var index;
+        if (char == 't') {
+            return find(symbol[char](para[0]), para[1] + ' <<', para[2] + 1);
+        } else if (char == 'r') {
+            var number = parseInt(formula.substr(1));
+            return find(symbol[char](para[0], number), para[1] + ' >>' + number, para[2] + 1);
+        }else if (char == 'z') {
+            var number = parseInt(formula.substr(1));
+            return find(symbol[char](para[0], number), para[1] + '增加' + number, para[2] + 1);
+        } else if (symbol[char]) {
+            var number = parseInt(formula.substr(1));
+            return find(symbol[char](para[0], number), para[1] + ' ' + formula, para[2] + 1);
+        } else {
+            console.log('error');
+            return null;
+        }
+    }
+    return find(start, start.toString(), 1);
+}
+
+}
+</script>
+
+</body>
+</html>
